@@ -20,7 +20,14 @@ export const App: React.FC<Props> = ({ delay = 300 }) => {
   const applyQuery = useCallback(debounce(setAppliedQuery, delay), [delay]);
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuery = event.target.value;
+    const newQuery = event.target.value.trim();
+
+    if (newQuery === '') {
+      setQuery('');
+      applyQuery.cancel();
+
+      return;
+    }
 
     setQuery(newQuery);
     applyQuery(newQuery);
@@ -31,10 +38,14 @@ export const App: React.FC<Props> = ({ delay = 300 }) => {
   };
 
   const filteredOptions = useMemo(() => {
+    if (query === '') {
+      return peopleFromServer; // Якщо інпут порожній, показуємо всіх
+    }
+
     return peopleFromServer.filter(person =>
       person.name.toLowerCase().includes(appliedQuery.toLowerCase()),
     );
-  }, [appliedQuery]);
+  }, [appliedQuery, query]);
 
   const hasNoMatches = filteredOptions.length === 0;
 
