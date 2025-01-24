@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import debounce from 'lodash.debounce';
 import cn from 'classnames';
 import './App.scss';
@@ -23,29 +23,36 @@ export const App: React.FC<Props> = ({ delay = 300 }) => {
     const newQuery = event.target.value.trim();
 
     if (newQuery === '') {
-      setQuery('');
+      setQuery(event.target.value);
+      setAppliedQuery('');
       applyQuery.cancel();
 
       return;
     }
 
-    setQuery(newQuery);
+    setQuery(event.target.value);
     applyQuery(newQuery);
 
-    if (selectedOption && selectedOption.name !== newQuery) {
+    if (selectedOption && selectedOption.name !== event.target.value) {
       setSelectedOption(null);
     }
   };
 
+  useEffect(() => {
+    if (query.trim() !== '') {
+      applyQuery(query.trim());
+    }
+  }, [query, applyQuery]);
+
   const filteredOptions = useMemo(() => {
-    if (query === '') {
-      return peopleFromServer; // Якщо інпут порожній, показуємо всіх
+    if (appliedQuery === '') {
+      return peopleFromServer;
     }
 
     return peopleFromServer.filter(person =>
       person.name.toLowerCase().includes(appliedQuery.toLowerCase()),
     );
-  }, [appliedQuery, query]);
+  }, [appliedQuery]);
 
   const hasNoMatches = filteredOptions.length === 0;
 
